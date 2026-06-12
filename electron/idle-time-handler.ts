@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { createInterface } from 'readline';
 import { promisify } from 'util';
-import { app, powerMonitor } from 'electron';
+import { powerMonitor } from 'electron';
 import electronLog from 'electron-log/main';
 import { CONFIG } from './CONFIG';
 
@@ -539,16 +539,18 @@ export class IdleTimeHandler {
   }
 
   private _resolveWaylandIdleHelperPath(): string | null {
-    const helperPath = app.isPackaged
-      ? path.join(path.dirname(process.execPath), 'wayland-idle-helper')
-      : path.join(__dirname, 'bin', 'wayland-idle-helper');
+    const helperPath = path.join(
+      process.env.LIBEXEC_PATH ?? path.join(__dirname, '..', 'libexec'),
+      'wayland-idle-helper',
+    );
 
-    if (!existsSync(helperPath)) {
-      log.debug(`Wayland idle helper binary not found at ${helperPath}`);
-      return null;
+    if (existsSync(helperPath)) {
+      log.debug(`Wayland idle helper found at ${helperPath}`);
+      return helperPath;
     }
 
-    return helperPath;
+    log.debug(`Wayland idle helper binary not found at: ${helperPath}`);
+    return null;
   }
 
   private async _getLoginctlIdleTime(): Promise<number | null> {
