@@ -42,17 +42,17 @@ async function afterPack(context) {
   const helperDestPath = join(appOutDir, WAYLAND_IDLE_HELPER_DEST);
 
   const installWaylandIdleHelper = async () => {
-    if (isTruthyEnv(process.env.SP_SKIP_WAYLAND_IDLE_HELPER_BUILD)) {
-      console.warn(
-        '[afterPack] Skipping Wayland idle helper copy because SP_SKIP_WAYLAND_IDLE_HELPER_BUILD is set',
-      );
-      return;
-    }
-
     const helperStat = await fs.stat(WAYLAND_IDLE_HELPER_SRC).catch(() => null);
     if (!helperStat) {
+      if (isTruthyEnv(process.env.SP_EXCLUDE_WAYLAND_IDLE_HELPER)) {
+        console.warn(
+          '[afterPack] Skipping Wayland idle helper copy because SP_EXCLUDE_WAYLAND_IDLE_HELPER is set',
+        );
+        return;
+      }
+
       throw new Error(
-        `[afterPack] ${WAYLAND_IDLE_HELPER_SRC} not found. Linux packages must include the Wayland idle helper; install Rust/Cargo before packaging or set SP_SKIP_WAYLAND_IDLE_HELPER_BUILD=1 to intentionally omit ext-idle-notify support.`,
+        `[afterPack] ${WAYLAND_IDLE_HELPER_SRC} not found. Linux packages must include the Wayland idle helper; install Rust/Cargo before packaging or set SP_EXCLUDE_WAYLAND_IDLE_HELPER=1 to intentionally omit ext-idle-notify support.`,
       );
     }
 

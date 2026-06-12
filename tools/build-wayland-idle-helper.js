@@ -27,6 +27,9 @@ const hasCargo = () => {
 
 const isTruthyEnv = (value) => value === '1' || value?.toLowerCase() === 'true';
 
+const isExplicitlyExcluded = () =>
+  isTruthyEnv(process.env.SP_EXCLUDE_WAYLAND_IDLE_HELPER);
+
 const isExplicitlySkipped = () =>
   isTruthyEnv(process.env.SP_SKIP_WAYLAND_IDLE_HELPER_BUILD);
 
@@ -40,8 +43,14 @@ const removeBuiltHelper = () => {
 };
 
 const buildHelper = () => {
-  if (isExplicitlySkipped()) {
+  if (isExplicitlyExcluded()) {
+    console.warn(
+      '[build-wayland-idle-helper] Removing Wayland idle helper because SP_EXCLUDE_WAYLAND_IDLE_HELPER is set.',
+    );
     removeBuiltHelper();
+    return;
+  }
+  if (isExplicitlySkipped()) {
     console.warn(
       '[build-wayland-idle-helper] Skipping Wayland idle helper because SP_SKIP_WAYLAND_IDLE_HELPER_BUILD is set.',
     );
